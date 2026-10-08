@@ -21,6 +21,12 @@ val releaseKeyAlias = signingProperties.getProperty("keyAlias")
 val releaseKeyPassword = signingProperties.getProperty("keyPassword")
     ?: System.getenv("ANDROID_KEY_PASSWORD")
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
 android {
     namespace = "com.wroxtaaar.newfinance"
     compileSdk = 36
@@ -37,14 +43,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    buildFeatures { buildConfig = true }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
     }
 
     signingConfigs {
