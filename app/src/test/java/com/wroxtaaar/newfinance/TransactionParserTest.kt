@@ -309,6 +309,38 @@ class TransactionParserTest {
     }
 
     @Test
+    fun hdfcEmailReferenceNoIsExtractedAsFullReference() {
+        val p = TransactionParser.parse(
+            "View. Account update for your HDFC Bank A/c " +
+                "We're writing to inform you that Rs.2.00 has been successfully credited " +
+                "to your HDFC Bank account ending in 9591. UPI Reference No.: 491022183543 " +
+                "For more details on Service charges and Fees, click here.",
+            1,
+            "com.google.android.gm"
+        )
+
+        assertNotNull(p)
+        assertEquals(200L, p!!.amountMinor)
+        assertEquals(Direction.CREDIT, p.direction)
+        assertEquals("9591", p.accountLast4)
+        assertEquals("491022183543", p.reference)
+        assertEquals("HDFC", p.bank)
+    }
+
+    @Test
+    fun referenceWordItselfIsNeverCapturedAsReference() {
+        val p = TransactionParser.parse(
+            "Credit Alert! Rs.2.00 credited to HDFC Bank A/c XX9591 " +
+                "on 08-10-26 from VPA 9205971964@axl (UPI 491022183543).",
+            1,
+            "VM-HDFCBK-S"
+        )
+
+        assertNotNull(p)
+        assertEquals("491022183543", p!!.reference)
+    }
+
+    @Test
     fun hdfcUpdateDebitExtractsReference() {
         val p = TransactionParser.parse(
             "UPDATE: INR 5,000.00 debited from HDFC Bank XX9591 on 10-FEB-23. " +
