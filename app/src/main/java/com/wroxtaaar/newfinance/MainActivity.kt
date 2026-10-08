@@ -132,7 +132,7 @@ private fun Screen(
             item {
                 Text("Capture only", style = MaterialTheme.typography.titleLarge)
                 Text(
-                    "SMS + payment-app notifications. Unknown formats are retained locally " +
+                    "SMS + payment-app + email notifications. Unknown formats are retained locally " +
                         "for parser improvements."
                 )
                 Spacer(Modifier.height(8.dp))
