@@ -1,11 +1,29 @@
 package com.wroxtaaar.newfinance
 
+import com.wroxtaaar.newfinance.capture.AllowList
 import com.wroxtaaar.newfinance.data.Direction
 import com.wroxtaaar.newfinance.parser.TransactionParser
 import org.junit.Assert.*
 import org.junit.Test
 
 class TransactionParserTest {
+    @Test
+    fun emailPackagesAreAllowedForNotificationCapture() {
+        assertTrue(AllowList.allowedPackage("com.google.android.gm"))
+        assertTrue(AllowList.allowedPackage("com.microsoft.office.outlook"))
+        assertTrue(AllowList.isEmailPackage("com.google.android.gm"))
+        assertFalse(AllowList.allowedPackage("com.google.android.apps.gmail"))
+    }
+
+    @Test
+    fun unrelatedEmailNotificationIsNotMarkedAsTransactionCandidate() {
+        assertFalse(
+            AllowList.looksLikeEmailTransaction(
+                "Amazon order update: your package will arrive tomorrow."
+            )
+        )
+    }
+
     @Test
     fun indusCreditCardPaymentReceivedIsCredit() {
         val p = TransactionParser.parse(
