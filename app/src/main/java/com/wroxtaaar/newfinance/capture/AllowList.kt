@@ -22,8 +22,7 @@ object AllowList {
     // inspect their notifications when the notification text itself looks
     // like a transaction, so normal mail remains ignored.
     private val emailPackages = setOf(
-        "com.google.android.gm",
-        "com.microsoft.office.outlook"
+        "com.google.android.gm"
     )
 
     private val packages = setOf(
@@ -46,7 +45,7 @@ object AllowList {
 
     fun allowedPackage(pkg: String) = pkg in packages
 
-    fun isEmailPackage(pkg: String) = pkg in emailPackages
+    fun isEmailPackage(pkg: String) = pkg == "com.google.android.gm"
 
     fun looksLikeEmailTransaction(body: String): Boolean {
         val t = body.lowercase()
