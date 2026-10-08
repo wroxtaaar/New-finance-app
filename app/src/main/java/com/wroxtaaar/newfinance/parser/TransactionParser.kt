@@ -120,7 +120,6 @@ object TransactionParser {
             "transaction was declined",
             "txn was declined",
             "has been rejected",
-            "loan",
             "pre-approved",
             "pre approved",
             "credit limit",
@@ -156,7 +155,6 @@ object TransactionParser {
             "deposited",
             "received payment",
             "payment received",
-            "payment of",
             "refund",
             "reversed"
         )
@@ -172,7 +170,8 @@ object TransactionParser {
             "thank you for using"
         )
 
-        val credit = creditSignals.any(t::contains)
+        val credit = creditSignals.any(t::contains) ||
+            Regex("\\bpayment\\s+of\\b.*\\b(?:received|credited)\\b", RegexOption.IGNORE_CASE).containsMatchIn(t)
         val debit = debitSignals.any(t::contains)
 
         return when {
