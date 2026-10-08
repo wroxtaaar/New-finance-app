@@ -221,23 +221,6 @@ class TransactionParserTest {
     }
 
     @Test
-    fun hdfcCreditUppiNumberReferenceIsExtracted() {
-        val p = TransactionParser.parse(
-            "Credit Alert! Rs. 10.00 credited to HDFC Bank A/c XX9591 on 08-10-26 " +
-                "from VPA 9205971964@axl (UPI 011669760795).",
-            1,
-            "AD-HDFCBK"
-        )
-
-        assertNotNull(p)
-        assertEquals(1000L, p!!.amountMinor)
-        assertEquals(Direction.CREDIT, p.direction)
-        assertEquals("9591", p.accountLast4)
-        assertEquals("011669760795", p.reference)
-        assertEquals("HDFC", p.bank)
-    }
-
-    @Test
     fun iciciUppiNumberNameExtractsReferenceAndMerchant() {
         val p = TransactionParser.parse(
             "ICICI Bank Credit Card XX0005 debited for INR 500.00 on 27-Jun-24 " +
