@@ -7,6 +7,74 @@ import org.junit.Test
 
 class TransactionParserTest {
     @Test
+    fun hdfcAmtSentIsDebit() {
+        val p = TransactionParser.parse(
+            "Amt Sent Rs.300.00\nFrom HDFC Bank A/C *9591\nTo MOTI AUTO PARTS\nOn 22-02\nRef 405385689759",
+            1,
+            "AD-HDFCBK"
+        )
+
+        assertNotNull(p)
+        assertEquals(30000L, p!!.amountMinor)
+        assertEquals(Direction.DEBIT, p.direction)
+        assertEquals("9591", p.accountLast4)
+        assertEquals("405385689759", p.reference)
+        assertEquals("MOTI AUTO PARTS", p.merchant)
+    }
+
+    @Test
+    fun realDebitAlertMentioningOtpIsNotRejected() {
+        val p = TransactionParser.parse(
+            "ALERT:Rs.100.00 spent via Debit Card xx0610 at HDFCBILLPAY on Nov 4 2023 11:42AM without PIN/OTP.Not you?",
+            1,
+            "AD-HDFCBK"
+        )
+
+        assertNotNull(p)
+        assertEquals(Direction.DEBIT, p!!.direction)
+        assertEquals(10000L, p.amountMinor)
+        assertEquals("0610", p.accountLast4)
+    }
+
+    @Test
+    fun refundMentioningStatementIsStillCredit() {
+        val p = TransactionParser.parse(
+            "Dear Customer, refund of INR 2 from ONE MOBIKWIK SYSTEM has been credited " +
+                "to your ICICI Bank Credit Card XX1012 on 23-JUL-23 and will be adjusted in the coming statement.",
+            1,
+            "JM-ICICIB"
+        )
+
+        assertNotNull(p)
+        assertEquals(Direction.CREDIT, p!!.direction)
+        assertEquals(200L, p.amountMinor)
+        assertEquals("1012", p.accountLast4)
+    }
+
+    @Test
+    fun scheduledMandateIsNotATransaction() {
+        assertNull(
+            TransactionParser.parse(
+                "For the upcoming mandate set for 16-09-26, INR 59.00 will be debited from your A/c towards Google.",
+                1,
+                "AX-AXISBK-S"
+            )
+        )
+    }
+
+    @Test
+    fun debitFacilityAlertIsNotATransaction() {
+        assertNull(
+            TransactionParser.parse(
+                "A transaction on your HDFC Bank Account ending 9591 Amt: 30000.00. " +
+                    "For security reasons, UPI debit facility is temporarily blocked.",
+                1,
+                "AX-HDFCBK"
+            )
+        )
+    }
+
+    @Test
     fun axisUpiDebit() {
         val p = TransactionParser.parse(
             "Debit\nINR 3,570.00\nA/c no. XX3370\n05-02-23 20:06:02\n" +
