@@ -204,7 +204,7 @@ object TransactionParser {
     private fun extractReference(text: String): String? {
         for (pattern in referencePatterns) {
             val match = pattern.find(text) ?: continue
-            return match.groupValues[1].takeLast(4).uppercase(Locale.US)
+            return match.groupValues[1].uppercase(Locale.US)
         }
         return null
     }
@@ -212,7 +212,7 @@ object TransactionParser {
     private fun extractAccountLast4(text: String): String? {
         for (pattern in accountPatterns) {
             val match = pattern.find(text) ?: continue
-            return match.groupValues[1]
+            return match.groupValues[1].takeLast(4)
         }
         return null
     }
