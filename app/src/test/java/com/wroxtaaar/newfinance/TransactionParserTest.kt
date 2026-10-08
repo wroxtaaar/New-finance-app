@@ -221,6 +221,93 @@ class TransactionParserTest {
     }
 
     @Test
+    fun hdfcCreditUppiNumberReferenceIsExtracted() {
+        val p = TransactionParser.parse(
+            "Credit Alert! Rs. 10.00 credited to HDFC Bank A/c XX9591 on 08-10-26 " +
+                "from VPA 9205971964@axl (UPI 011669760795).",
+            1,
+            "AD-HDFCBK"
+        )
+
+        assertNotNull(p)
+        assertEquals(1000L, p!!.amountMinor)
+        assertEquals(Direction.CREDIT, p.direction)
+        assertEquals("9591", p.accountLast4)
+        assertEquals("011669760795", p.reference)
+        assertEquals("HDFC", p.bank)
+    }
+
+    @Test
+    fun iciciUppiNumberNameExtractsReferenceAndMerchant() {
+        val p = TransactionParser.parse(
+            "ICICI Bank Credit Card XX0005 debited for INR 500.00 on 27-Jun-24 " +
+                "for UPI-417901673771-GUPTAPAI. To dispute call 18001080.",
+            1,
+            "JD-ICICIT"
+        )
+
+        assertNotNull(p)
+        assertEquals(50000L, p!!.amountMinor)
+        assertEquals(Direction.DEBIT, p.direction)
+        assertEquals("0005", p.accountLast4)
+        assertEquals("417901673771", p.reference)
+        assertEquals("GUPTAPAI", p.merchant)
+    }
+
+    @Test
+    fun reversalDoesNotUseStatusWordAsReference() {
+        val p = TransactionParser.parse(
+            "Txn of INR 34.44 on Axis Bank Credit Card no. XX0116 on 29-01-23 " +
+                "22:29:54 at UBERINDIASY is reversed.",
+            1,
+            "TM-AxisBK"
+        )
+
+        assertNotNull(p)
+        assertEquals(Direction.CREDIT, p!!.direction)
+        assertNull(p.reference)
+    }
+
+    @Test
+    fun declinedDoesNotUseStatusWordAsReference() {
+        val p = TransactionParser.parse(
+            "TXN DECLINED: Rs.150.09 on 15-09-2025 at UBER INDIA SYSTE PVT L " +
+                "on HDFC Bank Credit Card 5304. Reason: Online usage disabled.",
+            1,
+            "TM-HDFCBK"
+        )
+
+        assertNull(p)
+    }
+
+    @Test
+    fun maskedAccountWithExtraDigitsUsesLastFour() {
+        val p = TransactionParser.parse(
+            "Debit INR 2000.00 A/c no. XX133370 12-06-2023 20:28:37 " +
+                "ATM-WDL/YOGRAJ NAGA Bal INR 15077.74.",
+            1,
+            "JD-AXISBK"
+        )
+
+        assertNotNull(p)
+        assertEquals(Direction.DEBIT, p!!.direction)
+        assertEquals(200000L, p.amountMinor)
+        assertEquals("3370", p.accountLast4)
+    }
+
+    @Test
+    fun creditBalanceNoticeIsNotACompletedTransaction() {
+        assertNull(
+            TransactionParser.parse(
+                "Your Axis Bank Credit Card no. XX 9861 has a credit balance of INR 1008.48/-. " +
+                    "The amount will be credited to your Savings Account if not used within 7 days.",
+                1,
+                "JM-AXISBK"
+            )
+        )
+    }
+
+    @Test
     fun hdfcUpdateDebitExtractsReference() {
         val p = TransactionParser.parse(
             "UPDATE: INR 5,000.00 debited from HDFC Bank XX9591 on 10-FEB-23. " +
