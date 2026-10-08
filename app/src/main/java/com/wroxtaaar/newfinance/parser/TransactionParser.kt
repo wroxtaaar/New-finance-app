@@ -168,6 +168,7 @@ object TransactionParser {
         )
         val debitSignals = listOf(
             "debited",
+            "debit",
             "spent",
             "amt sent",
             "sent rs",
