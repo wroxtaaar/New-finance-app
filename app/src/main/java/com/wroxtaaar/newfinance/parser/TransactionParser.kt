@@ -28,6 +28,7 @@ object TransactionParser {
         Regex("""(?i)\btransaction\s*(?:id|no)\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\bpaytm\s*ref\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\bUPI/P2[AM]/([0-9]{8,18})\b"""),
+        Regex("""(?i)\bUPI\s+([0-9]{8,18})\b"""),
         Regex("""(?i)\bUPI-(?:[^-]*-){3}([0-9]{10,18})-Payment\b""")
     )
 
