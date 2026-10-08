@@ -23,7 +23,7 @@ object TransactionParser {
 
     private val referencePatterns = listOf(
         Regex("""(?i)\b(?:utr|rrn)\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
-        Regex("""(?i)\b(?:ref|reference)(?:\s*(?:no|number|id))?\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
+        Regex("""(?i)\bref(?:erence)?(?:\s*(?:no|number|id))?\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\btxn\s*(?:id|no)\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\btransaction\s*(?:id|no)\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\bpaytm\s*ref\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
