@@ -21,10 +21,14 @@ class NotificationCaptureService : NotificationListenerService() {
         if (sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY != 0) return
 
         val extras = sbn.notification.extras ?: return
+        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
+        val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
+        val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString().orEmpty()
         val body = buildNotificationText(
-            title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty(),
-            text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty(),
-            bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString().orEmpty(),
+            isGmail = packageName == "com.google.android.gm",
+            title = title,
+            text = text,
+            bigText = bigText,
             infoText = extras.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString().orEmpty(),
             subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString().orEmpty(),
             summaryText = extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString().orEmpty(),
@@ -60,6 +64,7 @@ class NotificationCaptureService : NotificationListenerService() {
     }
 
     private fun buildNotificationText(
+        isGmail: Boolean,
         title: String,
         text: String,
         bigText: String,
@@ -70,15 +75,22 @@ class NotificationCaptureService : NotificationListenerService() {
         tickerText: String
     ): String {
         val values = linkedSetOf<String>()
+
+        // Gmail's inbox-style notifications can place multiple email previews
+        // in EXTRA_TEXT_LINES. Treat that field as a group summary, not as the
+        // body of one email, otherwise two different bank emails can get mixed
+        // into one transaction.
         listOf(title, bigText, text, infoText, subText, summaryText, tickerText)
             .map(String::trim)
             .filter(String::isNotBlank)
             .forEach(values::add)
 
-        textLines
-            .map(String::trim)
-            .filter(String::isNotBlank)
-            .forEach(values::add)
+        if (!isGmail) {
+            textLines
+                .map(String::trim)
+                .filter(String::isNotBlank)
+                .forEach(values::add)
+        }
 
         return values.joinToString("\n")
     }
