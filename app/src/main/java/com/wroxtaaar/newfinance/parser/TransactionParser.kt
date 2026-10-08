@@ -110,7 +110,6 @@ object TransactionParser {
             "minimum amount due",
             "min amt due",
             "payable by",
-            "payment due",
             "payment failed",
             "transaction failed",
             "payment unsuccessful",
