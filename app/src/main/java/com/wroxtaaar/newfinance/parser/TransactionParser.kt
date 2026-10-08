@@ -243,7 +243,7 @@ object TransactionParser {
     private fun extractMerchant(text: String): String? {
         // Most specific bank/payment formats first. This prevents a generic
         // "at ..." match from swallowing trailing status text.
-        Regex("""(?i)\bfor\s+UPI-\d{8,18}-([A-Za-z][A-Za-z0-9 &.'_/-]{1,80})(?=\.|,|\s+To dispute|\s*$)""")
+        Regex("""(?i)\bfor\s+UPI-\d{8,18}-([A-Za-z][A-Za-z0-9 &_'/-]{1,80})\.""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
@@ -275,7 +275,7 @@ object TransactionParser {
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\b(?:at|on)\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{2,80})(?=\s+(?:avl|available|on|for|if|to|is\b)|[.,]|$)""")
+        Regex("""(?i)\bat\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{2,80})(?=\s+(?:avl|available|on|for|if|to|is\b)|[.,]|$)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
