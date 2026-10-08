@@ -241,11 +241,21 @@ object TransactionParser {
     }
 
     private fun extractMerchant(text: String): String? {
-        Regex("""(?i)\bUPI/P2[AM]/[0-9]{8,18}/([^/]+)""")
+        // Most specific bank/payment formats first. This prevents a generic
+        // "at ..." match from swallowing trailing status text.
+        Regex("""(?i)\bfor\s+UPI-\d{8,18}-([A-Za-z][A-Za-z0-9 &.'_/-]{1,80})(?=\.|,|\s+To dispute|\s*$)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\bfor\s+UPI-\d{8,18}-([A-Za-z][A-Za-z0-9 &.'_/-]{1,80})(?=\.|,|\s+To dispute|\s*$)""")
+        Regex("""(?i)\bused\s+at\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{1,80})\s+for\s+(?:rs\.?|inr|₹)""")
+            .find(text)
+            ?.let { return cleanMerchant(it.groupValues[1]) }
+
+        Regex("""(?i)\bat\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{1,80})\s+is\s+reversed\b""")
+            .find(text)
+            ?.let { return cleanMerchant(it.groupValues[1]) }
+
+        Regex("""(?i)\bUPI-[^-]+-([^-]+)-[^-]+-[0-9]{10,18}-Payment\b""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
@@ -253,15 +263,7 @@ object TransactionParser {
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\bat\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{2,80})(?=\s+(?:avl|available|on|for|if|to|is\b)|[.,]|$)""")
-            .find(text)
-            ?.let { return cleanMerchant(it.groupValues[1]) }
-
-        Regex("""(?i)\bused\s+at\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{2,80})\s+for\s+(?:rs\.?|inr|₹)""")
-            .find(text)
-            ?.let { return cleanMerchant(it.groupValues[1]) }
-
-        Regex("""(?i)\bto\s+VPA\s+([^\s(]+)""")
+        Regex("""(?i)\bUPI/P2[AM]/[0-9]{8,18}/([^/]+)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
@@ -269,7 +271,11 @@ object TransactionParser {
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\bUPI-[^-]+-([^-]+)-[^-]+-[0-9]{10,18}-Payment\b""")
+        Regex("""(?i)\bto\s+VPA\s+([^\s(]+)""")
+            .find(text)
+            ?.let { return cleanMerchant(it.groupValues[1]) }
+
+        Regex("""(?i)\b(?:at|on)\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{2,80})(?=\s+(?:avl|available|on|for|if|to|is\b)|[.,]|$)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
@@ -278,5 +284,6 @@ object TransactionParser {
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
         return null
+
     }
 }
