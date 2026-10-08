@@ -4,9 +4,7 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-import java.util.Properties
-
-val signingProperties = Properties()
+val signingProperties = java.util.Properties()
 val signingPropertiesFile = rootProject.file("keystore.properties")
 if (signingPropertiesFile.exists()) {
     signingPropertiesFile.inputStream().use { signingProperties.load(it) }
