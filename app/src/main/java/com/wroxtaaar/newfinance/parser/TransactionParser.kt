@@ -28,7 +28,7 @@ object TransactionParser {
         Regex("""(?i)\btransaction\s*(?:id|no)\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\bpaytm\s*ref\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\bUPI/P2[AM]/([0-9]{8,18})\b"""),
-        Regex("""(?i)\bUPI-(?:[^-]*-){4}([0-9]{10,18})-Payment\b""")
+        Regex("""(?i)\bUPI-(?:[^-]*-){3}([0-9]{10,18})-Payment\b""")
     )
 
     private val accountPatterns = listOf(
@@ -245,7 +245,7 @@ object TransactionParser {
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\bfor\s+UPI-[^-]+-([A-Za-z][A-Za-z0-9 &.'_/]{2,80})(?:\.|,|$)""")
+        Regex("""(?i)\bfor\s+UPI-\d{8,18}-([A-Za-z][A-Za-z0-9 &.'_/-]{1,80})(?=\.|,|\s+To dispute|\s*$)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
