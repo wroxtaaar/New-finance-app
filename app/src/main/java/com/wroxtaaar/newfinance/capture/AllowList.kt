@@ -18,6 +18,14 @@ object AllowList {
         "SCBANK"
     )
 
+    // Email apps are handled as a separate notification source. We only
+    // inspect their notifications when the notification text itself looks
+    // like a transaction, so normal mail remains ignored.
+    private val emailPackages = setOf(
+        "com.google.android.gm",
+        "com.microsoft.office.outlook"
+    )
+
     private val packages = setOf(
         "com.google.android.apps.nbu.paisa.user",
         "com.phonepe.app",
@@ -25,7 +33,7 @@ object AllowList {
         "com.dreamplug.androidapp",
         "in.org.npci.upi",
         "com.amazon.mShop.android.shopping"
-    )
+    ) + emailPackages
 
     fun allowedSender(sender: String): Boolean {
         val normalized = sender.trim().uppercase().replace(Regex("\\s+"), " ")
@@ -37,4 +45,27 @@ object AllowList {
     }
 
     fun allowedPackage(pkg: String) = pkg in packages
+
+    fun isEmailPackage(pkg: String) = pkg in emailPackages
+
+    fun looksLikeEmailTransaction(body: String): Boolean {
+        val t = body.lowercase()
+        val signals = listOf(
+            "debited",
+            "credited",
+            "debit",
+            "credit alert",
+            "transaction",
+            "upi",
+            "a/c",
+            "account",
+            "card",
+            "payment received",
+            "received payment",
+            "refund",
+            "reversed",
+            "withdrawn"
+        )
+        return signals.any(t::contains)
+    }
 }
