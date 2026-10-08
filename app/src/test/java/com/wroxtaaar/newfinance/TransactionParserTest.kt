@@ -8,10 +8,10 @@ import org.junit.Test
 
 class TransactionParserTest {
     @Test
-    fun emailPackagesAreAllowedForNotificationCapture() {
+    fun gmailIsAllowedForNotificationCapture() {
         assertTrue(AllowList.allowedPackage("com.google.android.gm"))
-        assertTrue(AllowList.allowedPackage("com.microsoft.office.outlook"))
         assertTrue(AllowList.isEmailPackage("com.google.android.gm"))
+        assertFalse(AllowList.allowedPackage("com.microsoft.office.outlook"))
         assertFalse(AllowList.allowedPackage("com.google.android.apps.gmail"))
     }
 
