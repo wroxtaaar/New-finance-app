@@ -22,21 +22,22 @@ object TransactionParser {
     )
 
     private val referencePatterns = listOf(
-        Regex("""(?i)\b(?:utr|rrn)\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
-        Regex("""(?i)\bref(?:erence)?(?:\s*(?:no|number))?\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
-        Regex("""(?i)\btxn(?:\s*(?:id|no))?\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
+        Regex("""(?i)\b(?:utr|rrn)\s*(?:no\.?|number)?\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
+        Regex("""(?i)\b(?:ref|reference)(?:\s*(?:no|number|id))?\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
+        Regex("""(?i)\btxn\s*(?:id|no)\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\btransaction\s*(?:id|no)\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\bpaytm\s*ref\s*[:#-]?\s*([A-Z0-9]{6,})\b"""),
         Regex("""(?i)\bUPI/P2[AM]/([0-9]{8,18})\b"""),
         Regex("""(?i)\bUPI\s+([0-9]{8,18})\b"""),
+        Regex("""(?i)\bUPI-([0-9]{10,18})-[^\s.]+"""),
         Regex("""(?i)\bUPI-(?:[^-]*-){3}([0-9]{10,18})-Payment\b""")
     )
 
     private val accountPatterns = listOf(
-        Regex("""(?i)\b(?:a/c|acct|account)\s*(?:no\.?|number)?\s*[:#-]?\s*(?:x+|\*+)?([0-9]{4})\b"""),
-        Regex("""(?i)\b(?:credit\s+card|card)\s*(?:(?:no\.?|number)\s*)?(?:ending\s*(?:with)?\s*)?[:#-]?\s*(?:x+|\*+)?([0-9]{4})\b"""),
-        Regex("""(?i)\bcard\s+ending\s+(?:with\s+)?(?:x+|\*+)?([0-9]{4})\b"""),
-        Regex("""(?i)\bHDFC\s+Bank\s+(?:x+|\*+)([0-9]{4})\b""")
+        Regex("""(?i)\b(?:a/c|acct|account)\s*(?:no\.?|number)?\s*[:#-]?\s*(?:x+|\*+)?\s*([0-9]{4,})\b"""),
+        Regex("""(?i)\b(?:credit\s+card|card)\s*(?:(?:no\.?|number)\s*)?(?:ending\s*(?:with)?\s*)?[:#-]?\s*(?:x+|\*+)?\s*([0-9]{4,})\b"""),
+        Regex("""(?i)\bcard\s+ending\s+(?:with\s+)?(?:x+|\*+)?\s*([0-9]{4,})\b"""),
+        Regex("""(?i)\bHDFC\s+Bank\s+(?:x+|\*+)\s*([0-9]{4,})\b""")
     )
 
     private val bankPatterns = listOf(
@@ -130,7 +131,8 @@ object TransactionParser {
             "e-voucher",
             "voucher code",
             "excess cashback",
-            "will be reversed"
+            "will be reversed",
+            "credit balance"
         )
 
         if (exclusions.any(t::contains)) return true
@@ -202,7 +204,7 @@ object TransactionParser {
     private fun extractReference(text: String): String? {
         for (pattern in referencePatterns) {
             val match = pattern.find(text) ?: continue
-            return match.groupValues[1].uppercase(Locale.US)
+            return match.groupValues[1].takeLast(4).uppercase(Locale.US)
         }
         return null
     }
@@ -273,6 +275,10 @@ object TransactionParser {
         Regex("""(?i)\brefund\s+of\s+(?:rs\.?|inr|₹)\s*[0-9,]+(?:\.\d{1,2})?\s+from\s+(.+?)\s+(?:has\s+been\s+)?credited\b""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
+
+        Regex("""(?i)\bUPI-([0-9]{10,18})-([A-Za-z][A-Za-z0-9 &'_/-]{1,80})(?=\.|$)""")
+            .find(text)
+            ?.let { return cleanMerchant(it.groupValues[2]) }
 
         Regex("""(?i)\bUPI/P2[AM]/[0-9]{8,18}/([^/]+)""")
             .find(text)
