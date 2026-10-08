@@ -4,13 +4,65 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+import java.util.Properties
+
+val signingProperties = Properties()
+val signingPropertiesFile = rootProject.file("keystore.properties")
+if (signingPropertiesFile.exists()) {
+    signingPropertiesFile.inputStream().use { signingProperties.load(it) }
+}
+
+val releaseStoreFile = signingProperties.getProperty("storeFile")
+    ?: System.getenv("ANDROID_KEYSTORE_FILE")
+val releaseStorePassword = signingProperties.getProperty("storePassword")
+    ?: System.getenv("ANDROID_KEYSTORE_PASSWORD")
+val releaseKeyAlias = signingProperties.getProperty("keyAlias")
+    ?: System.getenv("ANDROID_KEY_ALIAS")
+val releaseKeyPassword = signingProperties.getProperty("keyPassword")
+    ?: System.getenv("ANDROID_KEY_PASSWORD")
+
 android {
     namespace = "com.wroxtaaar.newfinance"
     compileSdk = 36
-    defaultConfig { applicationId = "com.wroxtaaar.newfinance"; minSdk = 26; targetSdk = 36; versionCode = 1; versionName = "0.1.0" }
+    defaultConfig {
+        applicationId = "com.wroxtaaar.newfinance"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = "0.1.0"
+    }
+
     buildFeatures { buildConfig = true }
-    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
     kotlinOptions { jvmTarget = "17" }
+
+    signingConfigs {
+        if (releaseStoreFile != null &&
+            releaseStorePassword != null &&
+            releaseKeyAlias != null &&
+            releaseKeyPassword != null
+        ) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            if (signingConfigs.findByName("release") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
 }
 
 dependencies {
