@@ -170,8 +170,9 @@ object TransactionParser {
         )
 
         val credit = creditSignals.any(t::contains) ||
-            Regex("\\bpayment\\s+of\\b.*\\b(?:received|credited)\\b", RegexOption.IGNORE_CASE).containsMatchIn(t)
-        val debit = debitSignals.any(t::contains)
+            Regex("\\bpayment\\s+of\\b.*\\b(?:received|credited)\\b|\\breceived\\s+(?:a\\s+|your\\s+)?payment\\b", RegexOption.IGNORE_CASE).containsMatchIn(t)
+        val debit = debitSignals.any(t::contains) ||
+            Regex("\\b(?:bill\\s+payment|standing\\s+instruction)\\b.*\\bprocessed\\s+(?:successfully|the\\s+payment)\\b", RegexOption.IGNORE_CASE).containsMatchIn(t)
 
         return when {
             t.contains("is reversed") -> Direction.CREDIT
