@@ -7,6 +7,50 @@ import org.junit.Test
 
 class TransactionParserTest {
     @Test
+    fun indusCreditCardPaymentReceivedIsCredit() {
+        val p = TransactionParser.parse(
+            "Dear Customer, thank you for your Payment of INR 388.00 towards your " +
+                "IndusInd Bank Credit Card on 04/08/2023.",
+            1,
+            "VM-INDUSB"
+        )
+
+        assertNotNull(p)
+        assertEquals(Direction.CREDIT, p!!.direction)
+        assertEquals(38800L, p.amountMinor)
+    }
+
+    @Test
+    fun bankCardBillPaymentProcessedIsDebit() {
+        val p = TransactionParser.parse(
+            "UPDATE: Your ICICI Bank Credit Card bill payment of Rs. 100.00 for " +
+                "XXXXXXXXXXXX0005 has been processed successfully.",
+            1,
+            "CP-HDFCBK"
+        )
+
+        assertNotNull(p)
+        assertEquals(Direction.DEBIT, p!!.direction)
+        assertEquals(10000L, p.amountMinor)
+    }
+
+    @Test
+    fun standingInstructionPaymentIsDebit() {
+        val p = TransactionParser.parse(
+            "Dear Customer, we have successfully processed the payment of INR 199.00 " +
+                "for Youtube, as per the Standing Instruction XsvmYIE05N, on 14/08/2025 " +
+                "for your ICICI Bank Credit Card 8001.",
+            1,
+            "VM-ICICIT-S"
+        )
+
+        assertNotNull(p)
+        assertEquals(Direction.DEBIT, p!!.direction)
+        assertEquals(19900L, p.amountMinor)
+        assertEquals("8001", p.accountLast4)
+    }
+
+    @Test
     fun hdfcAmtSentIsDebit() {
         val p = TransactionParser.parse(
             "Amt Sent Rs.300.00\nFrom HDFC Bank A/C *9591\nTo MOTI AUTO PARTS\nOn 22-02\nRef 405385689759",
