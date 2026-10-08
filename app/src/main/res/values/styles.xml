@@ -1,1 +1,3 @@
-<resources><style name="Theme.NewFinance" parent="android:style/Theme.Material.Light.NoActionBar" /></resources>
+<resources>
+    <style name="Theme.NewFinance" parent="android:style/Theme.Material.NoActionBar" />
+</resources>
