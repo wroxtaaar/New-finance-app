@@ -81,4 +81,5 @@ dependencies {
     ksp("androidx.room:room-compiler:2.8.2")
     implementation("androidx.work:work-runtime-ktx:2.10.5")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+    testImplementation("junit:junit:4.13.2")
 }
