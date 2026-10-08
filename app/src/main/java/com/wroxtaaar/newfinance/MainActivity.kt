@@ -23,6 +23,7 @@ import com.wroxtaaar.newfinance.data.TransactionEntity
 import com.wroxtaaar.newfinance.sync.SmsBackfillWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -51,11 +52,15 @@ class MainActivity : ComponentActivity() {
         }
 
         exportStatus = "Exporting SMS..."
-        lifecycleScope.launch(Dispatchers.IO) {
-            runCatching {
-                SmsCorpusExporter.export(contentResolver, uri).count
-            }.onSuccess { count ->
-                exportStatus = "Exported $count SMS messages."
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    SmsCorpusExporter.export(contentResolver, uri).count
+                }
+            }
+
+            result.onSuccess { count ->
+                exportStatus = "Exported ${count} SMS messages."
             }.onFailure { error ->
                 exportStatus = "SMS export failed: ${error.message ?: "unknown error"}"
             }
