@@ -255,7 +255,7 @@ object TransactionParser {
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\bUPI-[^-]+-([^-]+)-[^-]+-[0-9]{10,18}-Payment\b""")
+        Regex("""(?i)\bUPI-([^-]+)-[^-]+-[^-]+-[0-9]{10,18}-Payment\b""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
