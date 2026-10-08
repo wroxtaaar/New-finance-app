@@ -34,7 +34,8 @@ object TransactionParser {
     private val accountPatterns = listOf(
         Regex("""(?i)\b(?:a/c|acct|account)\s*(?:no\.?|number)?\s*[:#-]?\s*(?:x+|\*+)?([0-9]{4})\b"""),
         Regex("""(?i)\b(?:credit\s+card|card)\s*(?:(?:no\.?|number)\s*)?(?:ending\s*(?:with)?\s*)?[:#-]?\s*(?:x+|\*+)?([0-9]{4})\b"""),
-        Regex("""(?i)\bcard\s+ending\s+(?:with\s+)?(?:x+|\*+)?([0-9]{4})\b""")
+        Regex("""(?i)\bcard\s+ending\s+(?:with\s+)?(?:x+|\*+)?([0-9]{4})\b"""),
+        Regex("""(?i)\bHDFC\s+Bank\s+(?:x+|\*+)([0-9]{4})\b""")
     )
 
     private val bankPatterns = listOf(
@@ -64,8 +65,8 @@ object TransactionParser {
         val merchant = extractMerchant(text)
 
         var score = 45
-        score += 15 // direction
-        score += 15 // amount
+        score += 15
+        score += 15
         if (reference != null) score += 20
         if (accountLast4 != null) score += 10
         if (bank != null) score += 5
@@ -157,17 +158,18 @@ object TransactionParser {
             "payment received",
             "payment of",
             "refund",
-            "reversed",
-            "cashback"
+            "reversed"
         )
         val debitSignals = listOf(
             "debited",
+            "debit",
             "spent",
             "withdrawn",
             "transferred to",
             "payment made",
             "purchase",
-            "used at"
+            "used at",
+            "thank you for using"
         )
 
         val credit = creditSignals.any(t::contains)
@@ -178,7 +180,8 @@ object TransactionParser {
             credit && !debit -> Direction.CREDIT
             debit && !credit -> Direction.DEBIT
             t.contains("spent") || t.contains("debited") ||
-                t.contains("withdrawn") || t.contains("used at") -> Direction.DEBIT
+                t.contains("debit") || t.contains("withdrawn") || t.contains("used at") ||
+                t.contains("thank you for using") -> Direction.DEBIT
             t.contains("credited") || t.contains("deposited") ||
                 t.contains("refund") || t.contains("reversed") -> Direction.CREDIT
             else -> null
@@ -250,7 +253,7 @@ object TransactionParser {
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\b(?:at|on)\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{2,80})(?=\s+(?:avl|available|on|for|if|to|is\b)|[.,]|$)""")
+        Regex("""(?i)\bat\s+([A-Za-z0-9][A-Za-z0-9 &.'*_-]{2,80})(?=\s+(?:avl|available|on|for|if|to|is\b)|[.,]|$)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
