@@ -102,10 +102,7 @@ object TransactionParser {
         val t = text.lowercase(Locale.US)
 
         val exclusions = listOf(
-            "one time password",
-            "otp",
             "e-statement",
-            "statement",
             "total amount due",
             "minimum amount due",
             "min amt due",
@@ -135,7 +132,19 @@ object TransactionParser {
             "will be reversed"
         )
 
-        return exclusions.any(t::contains)
+        if (exclusions.any(t::contains)) return true
+
+        // OTP/statement can appear inside a real transaction alert.
+        if (Regex("""(?i)\bone time password\b|\bsecret otp\b""").containsMatchIn(t)) return true
+        if (Regex("""(?i)\be-statement\b.*\b(?:generated|ready|available)\b""").containsMatchIn(t)) return true
+        if (!t.contains("refund") && Regex("""(?i)\b(?:statement|e-statement)\b.*\b(?:generated|ready|available)\b""").containsMatchIn(t)) return true
+
+        // Future/scheduled actions and security blocks are not completed transactions.
+        if (Regex("""(?i)\b(?:upcoming mandate|scheduled for autopay|will be debited|due (?:on|tomorrow)|maintain adequate account balance)\b""").containsMatchIn(t)) return true
+        if (Regex("""(?i)\b(?:debit|upi)\s+facility\b.*\b(?:blocked|disabled|temporarily)\b""").containsMatchIn(t)) return true
+        if (Regex("""(?i)\b(?:transaction|txn)\b.*\b(?:withheld|security reasons|temporarily blocked|limit exceeded)\b""").containsMatchIn(t)) return true
+
+        return false
     }
 
     private fun extractAmount(text: String): BigDecimal? =
@@ -159,8 +168,9 @@ object TransactionParser {
         )
         val debitSignals = listOf(
             "debited",
-            "debit",
             "spent",
+            "amt sent",
+            "sent rs",
             "withdrawn",
             "transferred to",
             "payment made",
@@ -178,8 +188,8 @@ object TransactionParser {
             t.contains("is reversed") -> Direction.CREDIT
             credit && !debit -> Direction.CREDIT
             debit && !credit -> Direction.DEBIT
-            t.contains("spent") || t.contains("debited") ||
-                t.contains("debit") || t.contains("withdrawn") || t.contains("used at") ||
+            t.contains("spent") || t.contains("debited") || t.contains("amt sent") ||
+                t.contains("sent rs") || t.contains("withdrawn") || t.contains("used at") ||
                 t.contains("thank you for using") -> Direction.DEBIT
             t.contains("credited") || t.contains("deposited") ||
                 t.contains("refund") || t.contains("reversed") -> Direction.CREDIT
@@ -263,6 +273,10 @@ object TransactionParser {
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
         Regex("""(?i)\bUPI/P2[AM]/[0-9]{8,18}/([^/]+)""")
+            .find(text)
+            ?.let { return cleanMerchant(it.groupValues[1]) }
+
+        Regex("""(?i)\bFrom\s+HDFC\s+Bank\s+A/C\s+[^ ]+\s+To\s+(.+?)\s+On\s+[^ ]+(?:\s+Ref\b|$)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
