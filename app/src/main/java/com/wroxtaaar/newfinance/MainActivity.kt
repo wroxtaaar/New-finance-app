@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
         setContent {
-            MaterialTheme {
+            MaterialTheme(colorScheme = darkColorScheme()) {
                 val tx by AppDatabase.get(this).transactions().all()
                     .collectAsState(initial = emptyList())
 
