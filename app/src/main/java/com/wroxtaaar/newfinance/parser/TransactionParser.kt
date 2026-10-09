@@ -290,7 +290,7 @@ object TransactionParser {
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
-        Regex("""(?i)\bSpent\s+(?:.*?\s+)?INR\s+[0-9,]+(?:\.\d{1,2})?\s+\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\s+\d{1,2}:\d{2}(?::\d{2})?(?:\s+IST)?\s+(.+?)(?=\s+(?:Avl|Available)\b|$)""")
+        Regex("""(?i)\bSpent\s+(?:.*?\s+)?INR\s+[0-9,]+(?:\.\d{1,2})?.*?\s+\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\s+\d{1,2}:\d{2}(?::\d{2})?(?:\s+IST)?\s+(.+?)(?=\s+(?:Avl|Available)\b|$)""")
             .find(text)
             ?.let { return cleanMerchant(it.groupValues[1]) }
 
