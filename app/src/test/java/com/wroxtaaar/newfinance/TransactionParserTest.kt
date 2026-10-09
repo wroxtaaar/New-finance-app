@@ -620,4 +620,34 @@ class TransactionParserTest {
         assertEquals("9206", p.accountLast4)
         assertEquals("AXIS", p.bank)
     }
+
+    @Test
+    fun airtelBillPayableReminderIsNotATransaction() {
+        assertNull(
+            TransactionParser.parse(
+                "Airtel Bill for your Airtel Black account - Oct'26 Download App " +
+                    "Hi Abdul wasiQ Mohd Sadiq! your black bill for 10101031091415 " +
+                    "Total amount payable: ₹766.82 Due Date:",
+                1,
+                "com.google.android.gm"
+            )
+        )
+    }
+
+    @Test
+    fun axisCardSpendAmountBeforeCardNumberIsParsed() {
+        val p = TransactionParser.parse(
+            "Spent INR 766.82 Axis Bank Card no. XX9206 " +
+                "09-10-26 09:54:51 IST AIRTELPAYME Avl Limit: INR 72701.85",
+            1,
+            "VM-AXISBK"
+        )
+
+        assertNotNull(p)
+        assertEquals(76682L, p!!.amountMinor)
+        assertEquals(Direction.DEBIT, p.direction)
+        assertEquals("9206", p.accountLast4)
+        assertEquals("AXIS", p.bank)
+        assertEquals("AIRTELPAYME", p.merchant)
+    }
 }
